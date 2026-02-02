@@ -1,0 +1,26 @@
+{
+  "name": "@s2n/cli",
+  "version": "0.1.0",
+  "private": false,
+  "bin": {
+    "sql2nosql": "dist/index.js"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "analyze": "node dist/index.js analyze",
+    "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
+    "build": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@s2n/core": "0.1.0",
+    "commander": "^12.1.0",
+    "pg": "^8.13.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.9.0",
+    "@types/pg": "^8.10.0",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.7.0"
+  }
+}

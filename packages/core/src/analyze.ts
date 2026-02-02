@@ -1,19 +1,16 @@
 import type { AnalysisResult } from "./model";
+import { parseSqlSchema } from "./sqlParser";
+import { buildAnalysisResult } from "./nosqlMapping";
 
 /**
- * Temporary stub for SQL → NoSQL analysis.
- * For now this only echoes the input in metadata so that
- * UI and CLI can be wired and tested end-to-end.
+ * End-to-end SQL → NoSQL analysis entrypoint.
+ *
+ * Deterministic, rule-based, and side-effect free:
+ * - Parses a subset of Postgres DDL into SqlSchema.
+ * - Maps SqlSchema into a NoSqlSchema using simple rules.
  */
 export function analyzeSqlToNoSql(sql: string): AnalysisResult {
-  return {
-    sqlSchema: {
-      tables: [],
-      foreignKeys: [],
-    },
-    nosqlSchema: {
-      collections: [],
-    },
-  };
+  const sqlSchema = parseSqlSchema(sql);
+  return buildAnalysisResult(sqlSchema);
 }
 
