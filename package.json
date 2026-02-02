@@ -1,0 +1,13 @@
+{
+  "name": "sql-to-nosql-analyzer",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "version": "1.0.0",
+  "scripts": {
+    "analyze": "yarn workspace @s2n/cli analyze"
+  },
+  "license": "MIT",
+  "author": "amin uddin"
+}
