@@ -6,7 +6,11 @@
   ],
   "version": "1.0.0",
   "scripts": {
-    "analyze": "yarn workspace @s2n/cli analyze"
+    "analyze": "yarn workspace @s2n/cli analyze",
+    "dev:web": "yarn workspace @s2n/web dev",
+    "build:core": "yarn workspace @s2n/core build",
+    "build:web": "yarn workspace @s2n/web build",
+    "build": "yarn run build:core && yarn run build:web"
   },
   "license": "MIT",
   "author": "amin uddin"
