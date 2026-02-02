@@ -16,7 +16,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourusername/sql-to-nosql-analyzer.git"
+    "url": "https://github.com/data-migration/sql-to-nosql-analyzer.git"
   },
   "files": [
     "dist",
