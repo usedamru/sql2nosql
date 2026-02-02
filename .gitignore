@@ -39,3 +39,9 @@ coverage/
 .cursor/history/
 .cursor/projects/
 
+# Config files with credentials
+sql2nosql.config.json
+
+# Output directory (generated analysis files)
+output/
+

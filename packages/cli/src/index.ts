@@ -123,14 +123,40 @@ program.parseAsync(process.argv).catch((err) => {
 function loadConfig(
   explicitPath?: string,
 ): { connection?: string; schema?: string; output?: string } {
-  const path =
-    explicitPath ??
-    join(process.cwd(), "sql2nosql.config.json");
-
-  if (!existsSync(path)) {
+  if (explicitPath) {
+    const path = resolvePath(explicitPath);
+    if (existsSync(path)) {
+      return readConfigFile(path);
+    }
     return {};
   }
 
+  // Try current directory first
+  const cwdPath = join(process.cwd(), "sql2nosql.config.json");
+  if (existsSync(cwdPath)) {
+    return readConfigFile(cwdPath);
+  }
+
+  // Try parent directory (in case running from packages/cli)
+  const parentPath = join(process.cwd(), "..", "sql2nosql.config.json");
+  if (existsSync(parentPath)) {
+    return readConfigFile(parentPath);
+  }
+
+  // Try repo root (two levels up from packages/cli)
+  const repoRootPath = join(process.cwd(), "..", "..", "sql2nosql.config.json");
+  if (existsSync(repoRootPath)) {
+    return readConfigFile(repoRootPath);
+  }
+
+  return {};
+}
+
+function readConfigFile(path: string): {
+  connection?: string;
+  schema?: string;
+  output?: string;
+} {
   try {
     const raw = readFileSync(path, "utf8");
     const parsed = JSON.parse(raw) as {
