@@ -62,7 +62,7 @@ yarn build
 
 # Option 1: configure via CLI flags
 yarn analyze \
-  --connection "postgres://user:pass@host:5432/dbname" \
+  --connection "postgres://<username>:<password>@<host>:<port>/<database>" \
   --schema public \
   --output ./output
 
@@ -70,12 +70,23 @@ yarn analyze \
 yarn analyze
 ```
 
+**Example with real values:**
+```bash
+yarn analyze \
+  --connection "postgres://postgres:mypassword@localhost:5432/devdb" \
+  --schema public \
+  --output ./output
+```
+
 This will produce:
 
-- `output/schema-analysis.json`: full SQL + NoSQL analysis.
-- `output/table-<tableName>.json`: one file per table, with:
-  - `sqlTable`: columns, primary keys, uniques.
-  - `nosqlCollection`: proposed NoSQL collection definition.
+- `output/index.html`: **Main entry point** - opens automatically in your browser
+- `output/schema-analysis.json`: full SQL + NoSQL analysis
+- `output/schema-analysis.html`: detailed overview table
+- `output/table-<tableName>.json`: one JSON file per table
+- `output/table-<tableName>.html`: one HTML page per table with:
+  - `sqlTable`: columns, primary keys, uniques
+  - `nosqlCollection`: proposed NoSQL collection definition
 
 ### CLI config file (optional)
 
@@ -84,11 +95,25 @@ in the directory where you run the command:
 
 ```json
 {
-  "connection": "postgres://user:pass@host:5432/dbname",
+  "connection": "postgres://<username>:<password>@<host>:<port>/<database>",
   "schema": "public",
   "output": "./output"
 }
 ```
+
+**Example with real values:**
+```json
+{
+  "connection": "postgres://postgres:mypassword@localhost:5432/devdb",
+  "schema": "public",
+  "output": "./output"
+}
+```
+
+**Config file fields:**
+- `connection`: PostgreSQL connection string in format `postgres://username:password@host:port/database`
+- `schema`: Database schema to analyze (default: `"public"`)
+- `output`: Output directory for generated files (default: `"./output"`)
 
 Then simply run:
 
@@ -96,13 +121,19 @@ Then simply run:
 yarn analyze
 ```
 
+The tool will automatically:
+1. Connect to your PostgreSQL database
+2. Analyze all tables in the specified schema
+3. Generate JSON and HTML files
+4. Open `index.html` in your browser automatically
+
 You can also point to a different config file:
 
 ```bash
 yarn analyze --config ./path/to/other-config.json
 ```
 
-Flags always override config values if both are provided.
+**Note:** Flags always override config values if both are provided. The config file is ignored by git (already in `.gitignore`) to keep your credentials safe.
 
 ## Project Structure
 
