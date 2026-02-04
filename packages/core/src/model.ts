@@ -75,8 +75,37 @@ export interface NoSqlSchema {
   collections: NoSqlCollection[];
 }
 
+export type EmbeddingStrategy = "full" | "partial" | "reference" | "hybrid";
+
+export interface EmbeddingRecommendation {
+  collection: string;
+  field: string;
+  strategy: EmbeddingStrategy;
+  reason: string;
+  suggestedFields?: string[];
+  confidence?: number;
+}
+
+export interface OptimizationInsight {
+  type: "embedding" | "denormalization" | "indexing" | "sharding";
+  collection: string;
+  recommendation: string;
+  reasoning: string;
+  tradeoffs?: {
+    pros: string[];
+    cons: string[];
+  };
+}
+
+export interface LLMRecommendations {
+  embeddings: EmbeddingRecommendation[];
+  insights: OptimizationInsight[];
+  warnings?: string[];
+}
+
 export interface AnalysisResult {
   sqlSchema: SqlSchema;
   nosqlSchema: NoSqlSchema;
+  llmRecommendations?: LLMRecommendations;
 }
 
