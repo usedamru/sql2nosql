@@ -8,8 +8,9 @@
   "scripts": {
     "analyze": "yarn workspace @s2n/cli analyze",
     "build:core": "yarn workspace @s2n/core build",
+    "build:llm": "yarn workspace @s2n/llm build",
     "build:cli": "yarn workspace @s2n/cli build",
-    "build": "yarn run build:core && yarn run build:cli"
+    "build": "yarn run build:core && yarn run build:llm && yarn run build:cli"
   },
   "license": "MIT",
   "author": "amin uddin"

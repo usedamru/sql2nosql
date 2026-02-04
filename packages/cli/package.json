@@ -39,6 +39,7 @@
   },
   "dependencies": {
     "@s2n/core": "0.1.0",
+    "@s2n/llm": "0.1.0",
     "commander": "^12.1.0",
     "pg": "^8.13.0"
   },
