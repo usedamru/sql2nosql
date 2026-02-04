@@ -1,0 +1,37 @@
+{
+  "name": "@s2n/llm",
+  "version": "0.1.0",
+  "description": "LLM-powered optimization recommendations for SQL to NoSQL schema analysis",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "license": "MIT",
+  "author": "amin uddin",
+  "private": false,
+  "keywords": [
+    "llm",
+    "openai",
+    "ai",
+    "optimization",
+    "recommendations"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/data-migration/sql-to-nosql-analyzer.git"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "prepublishOnly": "yarn build"
+  },
+  "dependencies": {
+    "@s2n/core": "0.1.0",
+    "openai": "^4.24.3"
+  },
+  "devDependencies": {
+    "@types/node": "^22.9.0",
+    "typescript": "^5.7.0"
+  }
+}
