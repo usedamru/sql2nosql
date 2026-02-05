@@ -63,6 +63,11 @@ export interface NoSqlField {
   optional: boolean;
   description?: string;
   refCollection?: string;
+  /**
+   * Nested fields for object types. Used when LLM or mapping rules
+   * propose embedded sub-documents, e.g. album.artist.{id,name}.
+   */
+  fields?: NoSqlField[];
 }
 
 export interface NoSqlCollection {

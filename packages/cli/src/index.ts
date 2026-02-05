@@ -6,11 +6,15 @@ import {
   buildAnalysisResult,
   type AnalysisResult,
   type NoSqlCollection,
+  type NoSqlField,
+  type NoSqlFieldType,
+  type NoSqlSchema,
   type SqlColumn,
   type SqlColumnType,
   type SqlForeignKey,
   type SqlSchema,
   type SqlTable,
+  type LLMRecommendations,
 } from "@s2n/core";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { existsSync } from "node:fs";
@@ -86,7 +90,8 @@ program
         foreignKeys,
       };
 
-      let analysis: AnalysisResult = buildAnalysisResult(sqlSchema);
+      const baseAnalysis: AnalysisResult = buildAnalysisResult(sqlSchema);
+      let optimizedAnalysis: AnalysisResult | undefined;
 
       // LLM recommendations (optional)
       const enableLLM = opts.llm ?? configFromFile.llm?.enabled ?? false;
@@ -124,11 +129,18 @@ program
 
           const recommendations = await llmProvider.generateRecommendations(
             sqlSchema,
-            analysis.nosqlSchema,
+            baseAnalysis.nosqlSchema,
           );
 
-          analysis = {
-            ...analysis,
+          const optimizedNoSqlSchema = applyLLMRecommendationsToNoSqlSchema(
+            baseAnalysis.nosqlSchema,
+            sqlSchema,
+            recommendations,
+          );
+
+          optimizedAnalysis = {
+            ...baseAnalysis,
+            nosqlSchema: optimizedNoSqlSchema,
             llmRecommendations: recommendations,
           };
 
@@ -156,16 +168,25 @@ program
 
       mkdirSync(outputDir, { recursive: true });
 
-      // Global analysis file
+      const analyzeDir = join(outputDir, "analyze");
+      const recommendDir = join(outputDir, "recommend");
+      const viewDir = join(outputDir, "view");
+
+      mkdirSync(analyzeDir, { recursive: true });
+      mkdirSync(viewDir, { recursive: true });
+      if (optimizedAnalysis) {
+        mkdirSync(recommendDir, { recursive: true });
+      }
+
+      // Write deterministic analysis (without LLM) to analyze/
       writeFileSync(
-        join(outputDir, "schema-analysis.json"),
-        JSON.stringify(analysis, null, 2),
+        join(analyzeDir, "schema-analysis.json"),
+        JSON.stringify(baseAnalysis, null, 2),
         "utf8",
       );
 
-      // Per-table files
-      for (const table of analysis.sqlSchema.tables) {
-        const collection = analysis.nosqlSchema.collections.find(
+      for (const table of baseAnalysis.sqlSchema.tables) {
+        const collection = baseAnalysis.nosqlSchema.collections.find(
           (c) => c.name === table.name,
         );
 
@@ -176,48 +197,90 @@ program
 
         const fileName = `table-${table.name}.json`;
         writeFileSync(
-          join(outputDir, fileName),
+          join(analyzeDir, fileName),
           JSON.stringify(perTable, null, 2),
           "utf8",
         );
+      }
 
-        // Generate HTML for this table
+      // If we have an optimized schema, write it to recommend/
+      const analysisForHtml: AnalysisResult = optimizedAnalysis ?? baseAnalysis;
+
+      if (optimizedAnalysis) {
+        writeFileSync(
+          join(recommendDir, "schema-analysis.json"),
+          JSON.stringify(optimizedAnalysis, null, 2),
+          "utf8",
+        );
+
+        for (const table of optimizedAnalysis.sqlSchema.tables) {
+          const collection = optimizedAnalysis.nosqlSchema.collections.find(
+            (c) => c.name === table.name,
+          );
+
+          const perTable = {
+            sqlTable: table,
+            nosqlCollection: collection ?? null,
+          };
+
+          const fileName = `table-${table.name}.json`;
+          writeFileSync(
+            join(recommendDir, fileName),
+            JSON.stringify(perTable, null, 2),
+            "utf8",
+          );
+        }
+      }
+
+      // Generate HTML views under view/
+      for (const table of analysisForHtml.sqlSchema.tables) {
+        const collection = analysisForHtml.nosqlSchema.collections.find(
+          (c) => c.name === table.name,
+        );
+
         const htmlFileName = `table-${table.name}.html`;
-        const tableRecommendations = analysis.llmRecommendations?.embeddings.filter(
+        const tableRecommendations = analysisForHtml.llmRecommendations?.embeddings.filter(
           (r) => r.collection === table.name,
         );
         writeFileSync(
-          join(outputDir, htmlFileName),
+          join(viewDir, htmlFileName),
           generateTableHTML(
             table,
             collection ?? null,
-            analysis.sqlSchema.foreignKeys,
+            analysisForHtml.sqlSchema.foreignKeys,
             tableRecommendations,
-            analysis.llmRecommendations?.insights.filter((i) => i.collection === table.name),
+            analysisForHtml.llmRecommendations?.insights.filter(
+              (i) => i.collection === table.name,
+            ),
           ),
           "utf8",
         );
       }
 
-      // Generate overview HTML
+      // Overview + index for the selected analysis (optimized if available)
       writeFileSync(
-        join(outputDir, "schema-analysis.html"),
-        generateOverviewHTML(analysis),
+        join(viewDir, "schema-analysis.html"),
+        generateOverviewHTML(analysisForHtml),
         "utf8",
       );
 
-      // Generate index.html (main entry point)
       writeFileSync(
-        join(outputDir, "index.html"),
-        generateIndexHTML(analysis),
+        join(viewDir, "index.html"),
+        generateIndexHTML(analysisForHtml),
         "utf8",
       );
 
       // Basic CLI output
-      const indexHtmlPath = join(outputDir, "index.html");
+      const indexHtmlPath = join(viewDir, "index.html");
       // eslint-disable-next-line no-console
       console.log(
-        `Analyzed ${analysis.sqlSchema.tables.length} tables from schema "${schema}". JSON and HTML written to ${outputDir}`,
+        `Analyzed ${baseAnalysis.sqlSchema.tables.length} tables from schema "${schema}". JSON written to ${join(
+          outputDir,
+          "analyze",
+        )}${optimizedAnalysis ? ` and ${join(outputDir, "recommend")}` : ""}, HTML written to ${join(
+          outputDir,
+          "view",
+        )}`,
       );
       
       // Auto-open browser
@@ -425,6 +488,128 @@ async function loadUniqueConstraints(
   return Array.from(byConstraint.values());
 }
 
+/**
+ * Apply LLM embedding recommendations to the NoSQL schema.
+ *
+ * This keeps the deterministic mapping as a base, then:
+ * - augments field descriptions with LLM reasoning
+ * - optionally adds synthetic embedded fields for partial/full/hybrid strategies
+ */
+function applyLLMRecommendationsToNoSqlSchema(
+  baseSchema: NoSqlSchema,
+  sqlSchema: SqlSchema,
+  llm: LLMRecommendations | undefined,
+): NoSqlSchema {
+  if (!llm || llm.embeddings.length === 0) {
+    return baseSchema;
+  }
+
+  const collections = new Map<string, NoSqlCollection>();
+  for (const collection of baseSchema.collections) {
+    collections.set(collection.name, {
+      ...collection,
+      fields: collection.fields.map((f) => ({ ...f })),
+    });
+  }
+
+  for (const rec of llm.embeddings) {
+    const collection = collections.get(rec.collection);
+    if (!collection) continue;
+
+    // Try to find the referenced table.
+    // 1) Prefer real FK metadata if present.
+    const fk = sqlSchema.foreignKeys.find(
+      (candidate) =>
+        candidate.fromTable === rec.collection && candidate.fromColumn === rec.field,
+    );
+
+    let referencedTable = fk
+      ? sqlSchema.tables.find((t) => t.name === fk.toTable)
+      : undefined;
+
+    // 2) If there's no FK (common in legacy schemas), infer table name from field.
+    //    e.g. album.artistid -> artist, album.ArtistId -> artist
+    if (!referencedTable) {
+      const baseName = rec.field.replace(/_id$/i, "").replace(/id$/i, "");
+      if (baseName) {
+        const lowerBase = baseName.toLowerCase();
+        referencedTable =
+          sqlSchema.tables.find((t) => t.name.toLowerCase() === lowerBase) ??
+          sqlSchema.tables.find((t) => t.name.toLowerCase() === `${lowerBase}s`) ??
+          sqlSchema.tables.find((t) => t.name.toLowerCase() === `${lowerBase}es`);
+      }
+    }
+
+    // Derive a nested object field name from the FK field, e.g. artist_id -> artist
+    const baseName = rec.field.replace(/_id$/i, "").replace(/Id$/i, "");
+    const nestedName = baseName || `${rec.field}_obj`;
+
+    const existing = collection.fields.find((f) => f.name === nestedName);
+
+    let nestedFields: NoSqlField[] | undefined;
+
+    if (referencedTable) {
+      // Start from LLM-suggested fields if present, otherwise all columns.
+      const baseFieldNames =
+        rec.suggestedFields && rec.suggestedFields.length > 0
+          ? rec.suggestedFields
+          : referencedTable.columns.map((c) => c.name);
+
+      // Ensure id/PK columns are always included as part of the partial view.
+      const idLikeColumns = referencedTable.columns
+        .map((c) => c.name)
+        .filter((name) => /id$/i.test(name));
+
+      const allFieldNames = Array.from(
+        new Set<string>([...baseFieldNames, ...idLikeColumns]),
+      );
+
+      nestedFields = allFieldNames.map<NoSqlField>((fieldName) => {
+        const col = referencedTable.columns.find(
+          (c) => c.name.toLowerCase() === fieldName.toLowerCase(),
+        );
+
+        const fieldType: NoSqlFieldType = col
+          ? mapSqlColumnTypeToNoSqlFieldType(col.type)
+          : "unknown";
+
+        return {
+          name: fieldName,
+          type: fieldType,
+          optional: true,
+        };
+      });
+    }
+
+    if (existing) {
+      // If the field already exists and is an object, merge/extend nested fields.
+      if (existing.type === "object" && nestedFields && nestedFields.length > 0) {
+        const existingAny = existing as any;
+        const existingNames = new Set(
+          (existingAny.fields ?? []).map((f: NoSqlField) => f.name),
+        );
+        const mergedFields = [...(existingAny.fields ?? [])];
+        for (const nf of nestedFields) {
+          if (!existingNames.has(nf.name)) {
+            mergedFields.push(nf);
+            existingNames.add(nf.name);
+          }
+        }
+        existingAny.fields = mergedFields;
+      }
+    } else {
+      collection.fields.push({
+        name: nestedName,
+        type: "object",
+        optional: true,
+        ...(nestedFields && nestedFields.length > 0 ? { fields: nestedFields } : {}),
+      } as any);
+    }
+  }
+
+  return { collections: Array.from(collections.values()) };
+}
+
 async function loadForeignKeys(
   client: Client,
   schema: string,
@@ -484,6 +669,32 @@ function mapPostgresType(dataType: string): SqlColumnType {
   if (t === "jsonb") return "jsonb";
 
   return "unknown";
+}
+
+function mapSqlColumnTypeToNoSqlFieldType(type: SqlColumnType): NoSqlFieldType {
+  switch (type) {
+    case "integer":
+    case "bigint":
+    case "numeric":
+    case "serial":
+    case "bigserial":
+      return "number";
+    case "boolean":
+      return "boolean";
+    case "timestamp":
+    case "timestamptz":
+    case "date":
+      return "date";
+    case "text":
+    case "varchar":
+    case "uuid":
+      return "string";
+    case "json":
+    case "jsonb":
+      return "object";
+    default:
+      return "unknown";
+  }
 }
 
 function generateOverviewHTML(analysis: AnalysisResult): string {
