@@ -697,6 +697,13 @@ function mapSqlColumnTypeToNoSqlFieldType(type: SqlColumnType): NoSqlFieldType {
   }
 }
 
+function escapeHtml(input: string): string {
+  return input
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
 function generateOverviewHTML(analysis: AnalysisResult): string {
   const tables = analysis.sqlSchema.tables;
   const fks = analysis.sqlSchema.foreignKeys;
@@ -872,6 +879,17 @@ function generateTableHTML(
       )
       .join("") ?? "<tr><td colspan='4'>No NoSQL collection mapped</td></tr>";
 
+  const fullJson = escapeHtml(
+    JSON.stringify(
+      {
+        sqlTable: table,
+        nosqlCollection: collection,
+      },
+      null,
+      2,
+    ),
+  );
+
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1014,6 +1032,13 @@ function generateTableHTML(
         </table>
         ` : ""}
       </div>
+    </div>
+
+    <div class="section">
+      <h2>Full JSON Structure</h2>
+      <pre style="margin-top: 12px; background: #020617; padding: 16px; border-radius: 8px; border: 1px solid rgba(148,163,184,0.3); max-height: 400px; overflow: auto;">
+<code>${fullJson}</code>
+      </pre>
     </div>
 
     ${tableFKs.length > 0 || refFKs.length > 0 ? `
