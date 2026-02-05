@@ -108,9 +108,9 @@ program
         // eslint-disable-next-line no-console
         console.log("Generating LLM optimization recommendations...");
         try {
-          // Dynamic import to avoid requiring @s2n/llm when not used
-          // @ts-expect-error - Optional dependency, may not be installed
-          const llmModule = await import("@s2n/llm");
+          // Dynamic import to avoid requiring @s2n/llm when not used.
+          // Cast to any so this file doesn't depend on @s2n/llm types at compile time.
+          const llmModule: any = await import("@s2n/llm");
           if (!llmModule || !llmModule.OpenAIProvider) {
             throw new Error("Cannot find module '@s2n/llm'. Run 'yarn install' and 'yarn build:llm'.");
           }
