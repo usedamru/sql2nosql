@@ -13,5 +13,8 @@
     "build": "yarn run build:core && yarn run build:llm && yarn run build:cli"
   },
   "license": "MIT",
-  "author": "amin uddin"
+  "author": "amin uddin",
+  "dependencies": {
+    "mongodb": "^7.1.0"
+  }
 }
