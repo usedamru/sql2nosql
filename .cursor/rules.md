@@ -1,4 +1,4 @@
-# Cursor Rules — sql-to-nosql-analyzer
+# Cursor Rules — sql2nosql
 
 You are assisting in building an OSS database analysis tool.
 Behave like a senior infrastructure engineer.

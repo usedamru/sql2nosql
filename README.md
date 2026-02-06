@@ -6,7 +6,7 @@
 
 ## Overview
 
-`sql-to-nosql-analyzer` is an open-source tool that helps you understand how your SQL schema maps to NoSQL design patterns. It analyzes your SQL DDL (CREATE TABLE statements) and produces structured NoSQL schema proposals with explanations.
+`sql2nosql` is an open-source tool that helps you understand how your SQL schema maps to NoSQL design patterns. It analyzes your SQL DDL (CREATE TABLE statements) and produces structured NoSQL schema proposals with explanations.
 
 ### Current Status
 
@@ -41,7 +41,7 @@
 ```bash
 # Clone the repository
 git clone <repository-url>
-cd sql-to-nosql-analyzer
+cd sql2nosql
 
 # Install dependencies
 yarn install
@@ -138,7 +138,7 @@ yarn analyze --config ./path/to/other-config.json
 ## Project Structure
 
 ```
-sql-to-nosql-analyzer/
+sql2nosql/
 ├── packages/
 │   ├── core/          # Core analysis library (@s2n/core)
 │   │   ├── src/
