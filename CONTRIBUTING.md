@@ -2,6 +2,13 @@
 
 Thanks for your interest in contributing to `sql2nosql`.
 
+### Maintainer
+
+This project is currently maintained by **@amide-init**.
+
+- For bigger changes, please open an issue first and tag `@amide-init` to discuss the approach.
+- Maintainer has final say on scope, architecture, and release timing.
+
 ### Ways to contribute
 
 - **Bug reports**: include steps to reproduce, expected vs actual behavior, and logs/output.
