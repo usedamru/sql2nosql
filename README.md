@@ -2,7 +2,7 @@
 
 > Analyze SQL databases and generate explainable NoSQL schema designs.
 
-**v0.1** — Analysis only, deterministic, human-in-the-loop. No data migration.
+**v0.1** — Deterministic analysis + optional LLM recommendations + migration script generation (human-in-the-loop).
 
 ## Overview
 
@@ -24,7 +24,7 @@
 
 ### What This Tool Does NOT Do
 
-- ❌ Migrate data
+- ❌ Directly migrate data automatically (it generates scripts; you run them)
 - ❌ Execute SQL queries
 - ❌ Modify databases
 - ❌ Provide hosted UI (runs locally)
@@ -101,6 +101,8 @@ in the directory where you run the command:
 }
 ```
 
+**Config template:** copy [`sql2nosql.config.example.json`](./sql2nosql.config.example.json) to `sql2nosql.config.json` and fill in values.
+
 **Example with real values:**
 ```json
 {
@@ -134,6 +136,13 @@ yarn analyze --config ./path/to/other-config.json
 ```
 
 **Note:** Flags always override config values if both are provided. The config file is ignored by git (already in `.gitignore`) to keep your credentials safe.
+
+## Security
+
+- **Never commit `sql2nosql.config.json`.** It contains credentials (Postgres/MongoDB/LLM API keys).
+- Keep secrets in:
+  - `sql2nosql.config.json` (ignored by git), or
+  - environment variables (recommended for CI).
 
 ## Project Structure
 

@@ -1,0 +1,16 @@
+{
+  "connection": "postgres://<username>:<password>@<host>:<port>/<database>",
+  "schema": "public",
+  "output": "./output",
+  "llm": {
+    "enabled": false,
+    "apiKey": "<OPENAI_API_KEY>",
+    "model": "gpt-4.1-mini"
+  },
+  "mongodb": {
+    "uri": "mongodb://<username>:<password>@<host>:<port>",
+    "database": "sql2nosql",
+    "collectionPrefix": ""
+  }
+}
+
