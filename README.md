@@ -91,31 +91,63 @@ This will produce:
 ### CLI config file (optional)
 
 Instead of passing flags every time, you can create a `sql2nosql.config.json`
-in the directory where you run the command:
+in the directory where you run the command.
+
+**Config template:** copy [`sql2nosql.config.example.json`](./sql2nosql.config.example.json) to `sql2nosql.config.json` and fill in values.
+
+**Full config structure:**
 
 ```json
 {
   "connection": "postgres://<username>:<password>@<host>:<port>/<database>",
   "schema": "public",
-  "output": "./output"
-}
-```
-
-**Config template:** copy [`sql2nosql.config.example.json`](./sql2nosql.config.example.json) to `sql2nosql.config.json` and fill in values.
-
-**Example with real values:**
-```json
-{
-  "connection": "postgres://postgres:mypassword@localhost:5432/devdb",
-  "schema": "public",
-  "output": "./output"
+  "output": "./output",
+  "llm": {
+    "enabled": false,
+    "apiKey": "<OPENAI_API_KEY>",
+    "model": "gpt-4.1-mini"
+  },
+  "mongodb": {
+    "uri": "mongodb://<username>:<password>@<host>:<port>",
+    "database": "sql2nosql",
+    "collectionPrefix": ""
+  }
 }
 ```
 
 **Config file fields:**
-- `connection`: PostgreSQL connection string in format `postgres://username:password@host:port/database`
-- `schema`: Database schema to analyze (default: `"public"`)
-- `output`: Output directory for generated files (default: `"./output"`)
+
+| Field | Description |
+|-------|-------------|
+| `connection` | PostgreSQL connection string: `postgres://username:password@host:port/database` |
+| `schema` | Postgres schema to analyze (default: `"public"`) |
+| `output` | Directory for generated files: `analyze/`, `recommend/`, `view/`, `scripts/` (default: `"./output"`) |
+| `llm.enabled` | Set `true` to enable LLM optimization recommendations (default: `false`) |
+| `llm.apiKey` | OpenAI API key (or use `--llm-api-key` / `OPENAI_API_KEY` env var) |
+| `llm.model` | OpenAI model, e.g. `gpt-4.1-mini` (default: `gpt-4`) |
+| `mongodb.uri` | MongoDB connection string, e.g. `mongodb://user:pass@host:port` |
+| `mongodb.database` | Target MongoDB database name for migration scripts (default: `"sql2nosql"`) |
+| `mongodb.collectionPrefix` | Optional prefix for collection names (default: `""`) |
+
+**Example with real values:**
+
+```json
+{
+  "connection": "postgres://postgres:mypassword@localhost:5432/devdb",
+  "schema": "public",
+  "output": "./output",
+  "llm": {
+    "enabled": true,
+    "apiKey": "sk-...",
+    "model": "gpt-4.1-mini"
+  },
+  "mongodb": {
+    "uri": "mongodb://admin:admin123@localhost:27017",
+    "database": "devdb_mongo",
+    "collectionPrefix": ""
+  }
+}
+```
 
 Then simply run:
 
