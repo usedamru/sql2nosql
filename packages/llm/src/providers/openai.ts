@@ -1,4 +1,5 @@
 import OpenAI from "openai";
+import type { ChatCompletion } from "openai/resources/chat/completions";
 import type { SqlSchema, NoSqlSchema, LLMRecommendations } from "@s2n/core";
 import type { LLMProvider, LLMOptions } from "../types";
 import { buildRecommendationPrompt } from "../prompts";
@@ -16,6 +17,14 @@ export class OpenAIProvider implements LLMProvider {
     this.maxTokens = options.maxTokens ?? 2000;
   }
 
+  /** Strip markdown code fences if present so JSON.parse works. */
+  private extractJsonFromContent(content: string): string {
+    const trimmed = content.trim();
+    const codeBlock = trimmed.match(/```(?:json)?\s*([\s\S]*?)```/);
+    if (codeBlock) return codeBlock[1].trim();
+    return trimmed;
+  }
+
   async generateRecommendations(
     sqlSchema: SqlSchema,
     nosqlSchema: NoSqlSchema,
@@ -23,7 +32,9 @@ export class OpenAIProvider implements LLMProvider {
     const prompt = buildRecommendationPrompt(sqlSchema, nosqlSchema);
 
     try {
-      const response = await this.client.chat.completions.create({
+      // Do not use response_format: { type: "json_object" } — many models (e.g. gpt-4.1-mini) don't support it.
+      // Rely on the prompt and extractJsonFromContent() instead.
+      const response = (await this.client.chat.completions.create({
         model: this.model,
         messages: [
           {
@@ -38,14 +49,14 @@ export class OpenAIProvider implements LLMProvider {
         ],
         temperature: this.temperature,
         max_tokens: this.maxTokens,
-        response_format: { type: "json_object" },
-      });
+      })) as ChatCompletion;
 
-      const content = response.choices[0]?.message?.content;
-      if (!content) {
+      const rawContent = response.choices[0]?.message?.content;
+      if (!rawContent) {
         throw new Error("No response from OpenAI");
       }
 
+      const content = this.extractJsonFromContent(rawContent);
       const parsed = JSON.parse(content) as LLMRecommendations;
 
       // Validate structure

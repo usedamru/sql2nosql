@@ -97,8 +97,10 @@ program
       const baseAnalysis: AnalysisResult = buildAnalysisResult(sqlSchema);
       let optimizedAnalysis: AnalysisResult | undefined;
 
-      // LLM recommendations (optional)
-      const enableLLM = opts.llm ?? configFromFile.llm?.enabled ?? false;
+      // LLM recommendations (optional): enable if --llm passed or config has llm.enabled (and flag not explicitly off)
+      const enableLLM =
+        opts.llm === true ||
+        (opts.llm !== false && configFromFile.llm?.enabled === true);
       if (enableLLM) {
         const apiKey =
           opts.llmApiKey ??
