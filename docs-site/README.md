@@ -1,4 +1,4 @@
-# Damru — sql2nosql docs
+git# Damru — sql2nosql docs
 
 Documentation site for **sql2nosql** (Damru). Built with VitePress; content lives in repo root `content/`.
 

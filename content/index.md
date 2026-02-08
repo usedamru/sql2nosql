@@ -4,12 +4,20 @@
 
 ## Quick start
 
-1. **Analyze** your Postgres schema:
+1. **Clone and install**
+   ```bash
+   git clone https://github.com/usedamru/sql2nosql.git
+   cd sql2nosql
+   yarn install
+   yarn build
+   ```
+2. **Configure** — Copy `sql2nosql.config.example.json` to `sql2nosql.config.json` and set your Postgres `connection` and (optional) `mongodb` / `migration` options.
+3. **Analyze** your Postgres schema:
    ```bash
    yarn analyze
    # or: npx sql2nosql analyze
    ```
-2. **Run migrations** (Postgres → MongoDB):
+4. **Run migrations** (Postgres → MongoDB, optional):
    ```bash
    cd packages/cli && node output/scripts/run-all.migrate.js
    ```

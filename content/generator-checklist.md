@@ -1,6 +1,6 @@
 # Generator optimization checklist
 
-**Damru** — Status of the migration script generator against the optimization checklist.
+git **Damru** — Status of the migration script generator against the optimization checklist.
 
 | Category | Item | Status | Notes |
 |----------|------|--------|--------|
