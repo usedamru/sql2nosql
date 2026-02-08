@@ -24,6 +24,7 @@
 
 ## Documentation
 
+- [Configuration](/configuration) — How to configure the project (`sql2nosql.config.json`), including LLM options and advantages
 - [Run migrations](/run-migrations) — How to run migration scripts with Node
 - [Generator checklist](/generator-checklist) — Migration script generator options and config
 

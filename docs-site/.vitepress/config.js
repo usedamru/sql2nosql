@@ -8,6 +8,7 @@ export default defineConfig({
   themeConfig: {
     nav: [
       { text: 'Home', link: '/' },
+      { text: 'Configuration', link: '/configuration' },
       { text: 'Run migrations', link: '/run-migrations' },
       { text: 'Generator checklist', link: '/generator-checklist' },
     ],
@@ -16,6 +17,7 @@ export default defineConfig({
         text: 'Guide',
         items: [
           { text: 'Introduction', link: '/' },
+          { text: 'Configuration', link: '/configuration' },
           { text: 'Run migrations', link: '/run-migrations' },
           { text: 'Generator checklist', link: '/generator-checklist' },
         ],
