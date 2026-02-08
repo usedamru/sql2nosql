@@ -10,9 +10,9 @@
 
 ### Current Status
 
-- ✅ **v0.1**: CLI-based analysis pipeline (PostgreSQL support)
-- 🚧 **Coming**: deeper insights and recommendations
-- 🔮 **Future**: optional LLM-powered explanations
+- ✅ **v0.1**: CLI-based analysis (PostgreSQL), deterministic NoSQL mapping, optional LLM recommendations, migration script generation, HTML view
+- 🚧 **Coming**: Richer insights and more embedding/reference strategies
+- 🔮 **Future**: Additional database support, optional hosted UI
 
 ### What This Tool Does
 
@@ -300,8 +300,10 @@ MIT © amin uddin
 - [x] SQL DDL / metadata parser (PostgreSQL, via information_schema)
 - [x] NoSQL schema generation logic
 - [x] CLI tool for DB introspection + JSON generation
-- [ ] Insights and recommendations
-- [ ] Optional LLM-powered explanations
+- [x] Optional LLM-powered recommendations (embed vs reference, trade-offs)
+- [x] Migration script generation + HTML view
+- [ ] Richer insights and more mapping strategies
+- [ ] Additional database support (e.g. MySQL)
 
 ---
 
