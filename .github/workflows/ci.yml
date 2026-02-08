@@ -23,3 +23,5 @@ jobs:
       - name: Build packages
         run: yarn build
 
+      - name: Build docs-site
+        run: yarn docs:build

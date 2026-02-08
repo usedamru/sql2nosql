@@ -3,6 +3,7 @@ import { defineConfig } from 'vitepress'
 export default defineConfig({
   title: 'sql2nosql',
   description: 'Analyze PostgreSQL schemas and generate NoSQL (MongoDB) design and migration scripts.',
+  base: process.env.VITEPRESS_BASE || '/',
   srcDir: '../content',
   themeConfig: {
     nav: [
