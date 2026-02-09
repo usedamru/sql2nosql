@@ -52,8 +52,9 @@ yarn build
 
 ## Documentation
 
-- **Docs site** (VitePress): run `yarn docs:dev` and open http://localhost:5173. Build with `yarn docs:build`. One `yarn install` at repo root installs all workspaces (including `docs-site`)—no need to `cd docs-site && yarn install`.
-- **Docs content** (single source): repo root `content/` only. Edit `content/*.md`; the docs site reads from there.
+- **Live docs**: [`https://usedamru.github.io/sql2nosql/`](https://usedamru.github.io/sql2nosql/)
+- **Docs site (local)**: run `yarn docs:dev` and open http://localhost:5173. Build with `yarn docs:build`. One `yarn install` at repo root installs all workspaces (including `docs-site`)—no need to `cd docs-site && yarn install`.
+- **Docs content (source)**: repo root `content/` only. Edit `content/*.md`; the docs site reads from there.
 
 ## How to use this product
 
